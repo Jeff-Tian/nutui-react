@@ -1,3 +1,11 @@
+# v2.7.10
+
+`2025-03-14`
+
+- :sparkles: feat(calendar): add viewmode (#2985)
+- :bug: fix(calendar): defaultvalue 为空时,渲染异常 (#3015)
+- :bug: fix(tabs): 修复tabs数量过多时的滚动操作bug (#3014)
+
 # v2.7.9
 
 `2025-02-21`
