@@ -5,17 +5,20 @@ import { PopupProps } from '@/packages/popup/index'
 import { ComponentDefaults } from '@/utils/typings'
 import {
   getDateString,
-  getCurrMonthData,
-  getDaysStatus,
-  getPreMonthDates,
   compareDate,
   getMonthDays,
-  getWeekDate,
-  formatResultDate,
   isEqual,
   getNumTwoBit,
   getWhatDay,
 } from '@/utils/date'
+import {
+  getCurrMonthData,
+  getPreMonthDates,
+  getWeekDate,
+  formatResultDate,
+  getDaysStatus,
+  getWeekNosOfYear,
+} from './utils'
 import requestAniFrame from '@/utils/raf'
 import { useConfig } from '@/packages/configprovider'
 import { usePropsValue } from '@/utils/use-props-value'
@@ -58,6 +61,7 @@ export interface CalendarItemProps extends PopupProps {
   confirmText: ReactNode
   showTitle: boolean
   showSubTitle: boolean
+  showMonthNumber: boolean
   scrollAnimation: boolean
   firstDayOfWeek: number
   disableDate: (date: CalendarDay) => boolean
@@ -85,6 +89,7 @@ const defaultProps = {
   confirmText: '',
   showTitle: true,
   showSubTitle: true,
+  showMonthNumber: false,
   scrollAnimation: true,
   firstDayOfWeek: 0,
   disableDate: (date: CalendarDay) => false,
@@ -111,6 +116,7 @@ export const CalendarItem = React.forwardRef<
     type,
     autoBackfill,
     title,
+    value,
     defaultValue,
     startDate,
     endDate,
@@ -120,6 +126,7 @@ export const CalendarItem = React.forwardRef<
     confirmText,
     showTitle,
     showSubTitle,
+    showMonthNumber,
     scrollAnimation,
     firstDayOfWeek,
     disableDate,
@@ -128,7 +135,6 @@ export const CalendarItem = React.forwardRef<
     renderDay,
     renderDayTop,
     renderDayBottom,
-    value,
     onConfirm,
     onUpdate,
     onDayClick,
@@ -143,7 +149,6 @@ export const CalendarItem = React.forwardRef<
     ...weekdays.slice(firstDayOfWeek, 7),
     ...weekdays.slice(0, firstDayOfWeek),
   ]
-
   const monthTitle = locale.calendaritem.monthTitle
   const [yearMonthTitle, setYearMonthTitle] = useState('')
   const [monthsData, setMonthsData] = useState<any[]>([])
@@ -199,15 +204,16 @@ export const CalendarItem = React.forwardRef<
         ...getPreMonthDates('prev', y, m, firstDayOfWeek),
         ...getDaysStatus('active', y, m),
       ] as CalendarDay[]
-      const cssHeight = 39 + (days.length > 35 ? 384 : 320)
       let scrollTop = 0
       if (monthData.length > 0) {
         const monthEle = monthData[monthData.length - 1]
         scrollTop = monthEle.scrollTop + monthEle.cssHeight
       }
-      const monthInfo: CalendarMonthInfo = {
+      const cssHeight = 39 + (days.length > 35 ? 384 : 320)
+      const monthInfo = {
         curData: date,
         title: monthTitle(y, m),
+        weekNo: getWeekNosOfYear(y, m, firstDayOfWeek),
         monthData: days,
         cssHeight,
         scrollTop,
@@ -233,7 +239,7 @@ export const CalendarItem = React.forwardRef<
     const currentMonthsData = monthsData[current]
     if (currentMonthsData.title === yearMonthTitle) return
     const [year, month] = currentMonthsData.curData
-    onPageChange && onPageChange([year, month, `${year}-${month}`])
+    onPageChange?.([year, month, `${year}-${month}`])
     setYearMonthTitle(currentMonthsData.title)
   }
 
@@ -276,7 +282,6 @@ export const CalendarItem = React.forwardRef<
       }
       return defaultData
     }
-
     if (Array.isArray(currentDate) && currentDate.length) {
       // 日期转化为数组，限制初始日期。判断时间范围
       if (type === 'range') {
@@ -349,9 +354,7 @@ export const CalendarItem = React.forwardRef<
       const index = monthsData.findIndex((item) => {
         return +item.curData[0] === year && +item.curData[1] === month
       })
-      if (index > -1) {
-        current = index
-      }
+      if (index > -1) current = index
     }
     return {
       current,
@@ -399,7 +402,6 @@ export const CalendarItem = React.forwardRef<
   const requestAniFrameFunc = (current: number, monthNum: number) => {
     const lastItem = monthsData[monthsData.length - 1]
     const containerHeight = lastItem.cssHeight + lastItem.scrollTop
-
     requestAniFrame(() => {
       // 初始化 日历位置
       if (monthsRef && monthsPanel && viewAreaRef) {
@@ -414,12 +416,8 @@ export const CalendarItem = React.forwardRef<
   const getMonthNum = () => {
     let monthNum = Number(endDates[1]) - Number(startDates[1])
     const yearNum = Number(endDates[0]) - Number(startDates[0])
-    if (yearNum > 0) {
-      monthNum += 12 * yearNum
-    }
-    if (monthNum <= 0) {
-      monthNum = 1
-    }
+    if (yearNum > 0) monthNum += 12 * yearNum
+    if (monthNum <= 0) monthNum = 1
     setMonthsNum(monthNum)
     return monthNum
   }
@@ -449,7 +447,6 @@ export const CalendarItem = React.forwardRef<
     monthsData.splice(0)
     initData()
   }
-
   useEffect(() => {
     setCurrentDate(resetDefaultValue())
   }, [defaultValue])
@@ -627,7 +624,7 @@ export const CalendarItem = React.forwardRef<
     }
 
     if (!isFirst) {
-      onDayClick && onDayClick(state.currDateArray)
+      onDayClick?.(state.currDateArray)
       if (autoBackfill || !popup) {
         confirm()
       }
@@ -641,9 +638,9 @@ export const CalendarItem = React.forwardRef<
       type !== 'range'
     ) {
       const chooseData = state.currDateArray.slice(0)
-      onConfirm && onConfirm(chooseData)
+      onConfirm?.(chooseData)
       if (popup) {
-        onUpdate && onUpdate()
+        onUpdate?.()
       }
     }
   }
@@ -697,7 +694,10 @@ export const CalendarItem = React.forwardRef<
         {showSubTitle && (
           <div className={`${classPrefix}-sub-title`}>{yearMonthTitle}</div>
         )}
-        <div className={`${classPrefix}-weeks`} ref={weeksPanel}>
+        <div
+          className={`${classPrefix}-weeks ${showMonthNumber ? `${classPrefix}-weeks-shrink` : ''}`}
+          ref={weeksPanel}
+        >
           {weeks.map((item: string) => (
             <div className={`${classPrefix}-week-item`} key={item}>
               {item}
@@ -714,7 +714,7 @@ export const CalendarItem = React.forwardRef<
     const noStartNorEnd = !startTip && !endTip
     return (
       <div
-        className={[`${classPrefix}-day`, getClasses(day, month)].join(' ')}
+        className={classNames('nut-calendar-day', getClasses(day, month))}
         onClick={() => handleDayClick(day, month, false)}
         key={index}
       >
@@ -741,11 +741,11 @@ export const CalendarItem = React.forwardRef<
           )}
         {startTip && (
           <div
-            className={`${classPrefix}-day-info ${
-              isStartAndEnd(currentDate as string[])
-                ? `${classPrefix}-day-info-top`
-                : ''
-            }`}
+            className={classNames('nut-calendar-day-info', {
+              'nut-calendar-day-info-top': isStartAndEnd(
+                currentDate as string[]
+              ),
+            })}
           >
             {startText || locale.calendaritem.start}
           </div>
@@ -763,10 +763,21 @@ export const CalendarItem = React.forwardRef<
     return (
       <div className={`${classPrefix}-month`} key={key}>
         <div className={`${classPrefix}-month-title`}>{month.title}</div>
-        <div className={`${classPrefix}-days`}>
-          {month.monthData.map((day: CalendarDay, i: number) =>
-            renderItem(month, day, i)
+        <div className={`${showMonthNumber ? 'shrink' : ''}`}>
+          {showMonthNumber && (
+            <div className={`${classPrefix}-weeknumber`}>
+              {month.weekNo.map((item: string, index: number) => (
+                <div className={`${classPrefix}-weeknumber-index`} key={index}>
+                  {item}
+                </div>
+              ))}
+            </div>
           )}
+          <div className={`${classPrefix}-days`}>
+            {month.monthData.map((day: CalendarDay, i: number) =>
+              renderItem(month, day, i)
+            )}
+          </div>
         </div>
       </div>
     )
@@ -781,7 +792,6 @@ export const CalendarItem = React.forwardRef<
       >
         <div className={`${classPrefix}-pannel`} ref={monthsPanel}>
           <div
-            className="viewArea"
             ref={viewAreaRef}
             style={{ transform: `translateY(${translateY}px)` }}
           >

@@ -64,8 +64,10 @@ test('week prop', async () => {
       firstDayOfWeek={1}
     />
   )
-  const viewArea = container.querySelector('.viewArea') as HTMLElement
-  // expect(viewArea.innerHTML).toMatchSnapshot()
+  const viewArea = container.querySelector(
+    '.nut-calendar-pannel'
+  ) as HTMLElement
+  expect(viewArea.innerHTML).toMatchSnapshot()
 })
 
 test('range prop', async () => {
@@ -80,8 +82,76 @@ test('range prop', async () => {
       firstDayOfWeek={1}
     />
   )
-  const viewArea = container.querySelector('.viewArea') as HTMLElement
-  // expect(viewArea.innerHTML).toMatchSnapshot()
+  const viewArea = container.querySelector(
+    '.nut-calendar-pannel'
+  ) as HTMLElement
+  expect(viewArea.innerHTML).toMatchSnapshot()
+})
+
+test('viewmode prop', async () => {
+  const onItemClick = vi.fn()
+  const { container } = render(
+    <Calendar
+      viewMode="quarter"
+      defaultValue="2025-Q1"
+      startDate="2025-01-01"
+      endDate="2025-3-31"
+      onItemClick={onItemClick}
+    />
+  )
+  const viewArea = container.querySelector(
+    '.nut-calendar-viewmode-pannel'
+  ) as HTMLElement
+  expect(viewArea.innerHTML).toMatchSnapshot()
+})
+
+test('should render calendar in quarter view with extended date range', async () => {
+  const { container } = render(
+    <Calendar
+      viewMode="quarter"
+      defaultValue="2025-Q1"
+      startDate="2025-01-01"
+      endDate="2027-3-31"
+    />
+  )
+  const viewArea = container.querySelector(
+    '.nut-calendar-viewmode-pannel'
+  ) as HTMLElement
+  expect(viewArea.innerHTML).toMatchSnapshot()
+})
+
+test('should render calendar in month view with onItemClick', async () => {
+  const onItemClick = vi.fn()
+  const { container } = render(
+    <Calendar
+      viewMode="month"
+      defaultValue="2025-01"
+      startDate="2025-01-01"
+      endDate="2025-3-31"
+      onItemClick={onItemClick}
+    />
+  )
+  const viewArea = container.querySelector(
+    '.nut-calendar-viewmode-pannel'
+  ) as HTMLElement
+  expect(viewArea.innerHTML).toMatchSnapshot()
+})
+
+test('should render calendar in month view with extended date range', async () => {
+  const onItemClick = vi.fn()
+  const { container } = render(
+    <Calendar
+      viewMode="month"
+      defaultValue="2025-01"
+      startDate="2025-01-01"
+      endDate="2027-3-31"
+      onItemClick={onItemClick}
+    />
+  )
+  const viewArea = container.querySelector(
+    '.nut-calendar-viewmode-pannel'
+  ) as HTMLElement
+  expect(viewArea.innerHTML).toMatchSnapshot()
 })
 
 test('popup prop', async () => {
@@ -121,7 +191,9 @@ test('should render slot correctly', async () => {
   const topSlot = container.querySelector(
     '.nut-calendar-header-buttons'
   ) as HTMLElement
-  const viewArea = container.querySelector('.viewArea') as HTMLElement
+  const viewArea = container.querySelector(
+    '.nut-calendar-pannel'
+  ) as HTMLElement
   expect(topSlot.innerHTML).toContain('<div class="d_div"> 最近七天</div>')
   expect(viewArea.innerHTML).toMatchSnapshot()
 })
@@ -217,7 +289,7 @@ test('range select event when click item', () => {
   const start = container.querySelectorAll(
     '.nut-calendar-day-active .nut-calendar-day-day'
   )[0]
-  expect(start.innerHTML).toBe('13')
+  expect(start.innerHTML).toBe('10')
 
   const calendarMonthDay2 = container.querySelectorAll('.nut-calendar-day')[20]
   fireEvent.click(calendarMonthDay2)
@@ -225,5 +297,5 @@ test('range select event when click item', () => {
   const next = container.querySelectorAll(
     '.nut-calendar-day-choose .nut-calendar-day-day'
   )[0]
-  expect(next.innerHTML).toBe('14')
+  expect(next.innerHTML).toBe('11')
 })

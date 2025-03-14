@@ -9,34 +9,32 @@ const Demo11 = () => {
   }
 
   const yearMonthChange = (param: string) => {
-    console.log(param)
+    console.log('yearMonthChange', param)
   }
 
   return (
-    <>
-      <div
-        className="test-calendar-wrapper"
-        style={{
-          display: 'flex',
-          width: '100%',
-          height: '613px',
-          overflow: 'hidden',
-        }}
-      >
-        <Calendar
-          popup={false}
-          defaultValue={date}
-          type="range"
-          startDate="2025-02-23"
-          endDate="2025-08-01"
-          startText={<div>test</div>}
-          endText="leave"
-          autoBackfill
-          onConfirm={setChooseValue}
-          onPageChange={yearMonthChange}
-        />
-      </div>
-    </>
+    <div
+      className="test-calendar-wrapper"
+      style={{
+        display: 'flex',
+        width: '100%',
+        height: '350px',
+        overflow: 'hidden',
+      }}
+    >
+      <Calendar
+        popup={false}
+        defaultValue={date}
+        type="range"
+        startDate="2025-02-23"
+        endDate="2025-08-01"
+        startText={<div>test</div>}
+        endText="leave"
+        autoBackfill
+        onConfirm={setChooseValue}
+        onPageChange={yearMonthChange}
+      />
+    </div>
   )
 }
 export default Demo11
