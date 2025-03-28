@@ -1,3 +1,13 @@
+# v2.7.11
+
+`2025-03-28`
+
+- :bug: fix(searchbar): 支付宝小程序设置 enableInPageRenderInput 后无法触发 onChange (#3125)
+- :bug: fix: build jmapp (#3124)
+- :bug: fix(SearchBar): demos fixed (#3100)
+- :bug: fix: add $calendar-panel-item
+- 💡 test: fixed calenader (#3099)
+
 # v2.7.10
 
 `2025-03-14`
