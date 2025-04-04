@@ -139,6 +139,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 ### 浏览器中粘贴图片上传
 
+在浏览器中可以通过 Ctrl+V（Mac 上是 Cmd+V） 或右键粘贴图片进行上传。
+
 :::demo
 
 <CodeBlock src='h5/demo15.tsx'></CodeBlock>

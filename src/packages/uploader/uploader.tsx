@@ -396,7 +396,7 @@ const InternalUploader: ForwardRefRenderFunction<
 
       const files: File[] = []
 
-      if (clipboardData.items && clipboardData.items.length) {
+      if (clipboardData?.items && clipboardData.items.length) {
         for (let i = 0; i < clipboardData.items.length; i++) {
           const item = clipboardData.items[i]
           if (item.kind === 'file' && item.type.startsWith('image/')) {
@@ -406,7 +406,7 @@ const InternalUploader: ForwardRefRenderFunction<
             }
           }
         }
-      } else if (clipboardData.files && clipboardData.files.length) {
+      } else if (clipboardData?.files && clipboardData.files.length) {
         for (let i = 0; i < clipboardData.files.length; i++) {
           const file = clipboardData.files[i]
           if (file.type.startsWith('image/')) {
