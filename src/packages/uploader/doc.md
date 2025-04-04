@@ -137,6 +137,14 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 :::
 
+### 浏览器中粘贴图片上传
+
+:::demo
+
+<CodeBlock src='h5/demo15.tsx'></CodeBlock>
+
+:::
+
 ## Uploader
 
 ### Props
@@ -193,6 +201,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
 | url | 文件路径 | `-` |
 | type | 文件类型 | `image/jpeg` |
 | formData | 上传所需的data | `new FormData()` |
+| enablePasteUpload | 是否支持粘贴上传 | `false` |
 
 ### Methods
 

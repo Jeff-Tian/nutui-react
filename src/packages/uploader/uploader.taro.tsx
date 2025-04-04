@@ -418,7 +418,7 @@ const InternalUploader: ForwardRefRenderFunction<
         for (const [key, value] of Object.entries(data)) {
           formData.append(key, value as any)
         }
-        formData.append(name, file.originalFileObj as Blob)
+        formData.append(name, (file.originalFileObj as Blob) ?? file)
         fileItem.name = file.originalFileObj?.name
         fileItem.type = file.originalFileObj?.type
         fileItem.formData = formData
@@ -428,8 +428,22 @@ const InternalUploader: ForwardRefRenderFunction<
       if (preview) {
         fileItem.url = fileType === 'video' ? file.thumbTempFilePath : filepath
       }
-      executeUpload(fileItem, index)
-      results.push(fileItem)
+      if (preview && file.type?.includes('image')) {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          fileItem.url = event.target?.result as string
+          fileItem.path = event.target?.result as string
+          fileItem.name = (file as unknown as Blob).name
+          executeUpload(fileItem, index)
+          results.push(fileItem)
+          setFileList([...fileList, ...results])
+        }
+
+        reader.readAsDataURL(file as unknown as Blob)
+      } else {
+        executeUpload(fileItem, index)
+        results.push(fileItem)
+      }
     })
     setFileList([...fileList, ...results])
   }
