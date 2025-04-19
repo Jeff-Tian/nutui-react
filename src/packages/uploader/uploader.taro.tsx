@@ -5,6 +5,7 @@ import React, {
   PropsWithChildren,
   useRef,
   useEffect,
+  useCallback,
 } from 'react'
 import classNames from 'classnames'
 import Taro, {
@@ -119,6 +120,7 @@ export interface UploaderProps extends BasicComponent {
   beforeXhrUpload?: (xhr: XMLHttpRequest, options: any) => void
   beforeDelete?: (file: FileItem, files: FileItem[]) => boolean
   onFileItemClick?: (file: FileItem, index: number) => void
+  enablePasteUpload?: boolean
 }
 
 const defaultProps = {
@@ -152,6 +154,7 @@ const defaultProps = {
   beforeDelete: (file: FileItem, files: FileItem[]) => {
     return true
   },
+  enablePasteUpload: false,
 } as UploaderProps
 
 const InternalUploader: ForwardRefRenderFunction<
@@ -202,6 +205,7 @@ const InternalUploader: ForwardRefRenderFunction<
     beforeUpload,
     beforeXhrUpload,
     beforeDelete,
+    enablePasteUpload,
     ...restProps
   } = { ...defaultProps, ...props }
   const [fileList, setFileList] = usePropsValue({
@@ -439,7 +443,7 @@ const InternalUploader: ForwardRefRenderFunction<
           setFileList([...fileList, ...results])
         }
 
-        reader.readAsDataURL(file as unknown as Blob)
+        reader.readAsDataURL(file.originalFileObj ?? (file as unknown as Blob))
       } else {
         executeUpload(fileItem, index)
         results.push(fileItem)
@@ -519,6 +523,62 @@ const InternalUploader: ForwardRefRenderFunction<
   const handleItemClick = (file: FileItem, index: number) => {
     onFileItemClick?.(file, index)
   }
+
+  const handlePaste = useCallback(
+    (event: ClipboardEvent) => {
+      if (!enablePasteUpload || disabled) return
+
+      const clipboardData = event.clipboardData
+      if (!clipboardData) return
+
+      const files: TFileType[] = []
+
+      if (clipboardData?.items && clipboardData.items.length) {
+        for (let i = 0; i < clipboardData.items.length; i++) {
+          const item = clipboardData.items[i]
+          if (item.kind === 'file' && item.type.startsWith('image/')) {
+            const file = item.getAsFile()
+            if (file) {
+              files.push({
+                originalFileObj: file,
+                size: file.size,
+                path: '',
+                tempFilePath: '',
+                type: file.type,
+                fileType: file.type,
+              })
+            }
+          }
+        }
+      } else if (clipboardData?.files && clipboardData.files.length) {
+        for (let i = 0; i < clipboardData.files.length; i++) {
+          const file = clipboardData.files[i]
+          if (file.type.startsWith('image/')) {
+            files.push(file)
+          }
+        }
+      }
+
+      if (files.length) {
+        readFile(files)
+      }
+    },
+    [enablePasteUpload, disabled, beforeUpload, filterFiles, readFile, onChange]
+  )
+
+  useEffect(() => {
+    fileListRef.current = fileList
+
+    if (enablePasteUpload) {
+      document.addEventListener('paste', handlePaste)
+    }
+
+    return () => {
+      if (enablePasteUpload) {
+        document.removeEventListener('paste', handlePaste)
+      }
+    }
+  }, [fileList, enablePasteUpload, handlePaste])
 
   return (
     <div className={classes} {...restProps}>
