@@ -528,33 +528,23 @@ const InternalUploader: ForwardRefRenderFunction<
     (event: ClipboardEvent) => {
       if (!enablePasteUpload || disabled) return
 
-      const clipboardData = event.clipboardData
-      if (!clipboardData) return
-
+      const clipboardData = event.clipboardData ?? (window as any).clipboardData
+      const items = clipboardData?.items ?? []
       const files: TFileType[] = []
 
-      if (clipboardData?.items && clipboardData.items.length) {
-        for (let i = 0; i < clipboardData.items.length; i++) {
-          const item = clipboardData.items[i]
-          if (item.kind === 'file' && item.type.startsWith('image/')) {
-            const file = item.getAsFile()
-            if (file) {
-              files.push({
-                originalFileObj: file,
-                size: file.size,
-                path: '',
-                tempFilePath: '',
-                type: file.type,
-                fileType: file.type,
-              })
-            }
-          }
-        }
-      } else if (clipboardData?.files && clipboardData.files.length) {
-        for (let i = 0; i < clipboardData.files.length; i++) {
-          const file = clipboardData.files[i]
-          if (file.type.startsWith('image/')) {
-            files.push(file)
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file) {
+            files.push({
+              originalFileObj: file,
+              size: file.size,
+              path: '',
+              tempFilePath: '',
+              type: file.type,
+              fileType: file.type,
+            })
           }
         }
       }
