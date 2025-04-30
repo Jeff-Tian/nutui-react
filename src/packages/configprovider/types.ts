@@ -418,6 +418,7 @@ export type NutCSSVariables =
   | 'nutuiDialogContentTextAlign'
   | 'nutuiDialogFooterButtonMinWidth'
   | 'nutuiDialogFooterCancelMarginRight'
+  | 'nutuiDialogFooterCancelBg'
   | 'nutuiDialogFooterOkMaxWidth'
   | 'nutuiDialogHeaderFontSize'
   | 'nutuiDialogHeaderFontWeight'
